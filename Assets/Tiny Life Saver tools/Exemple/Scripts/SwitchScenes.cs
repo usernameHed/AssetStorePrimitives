@@ -8,7 +8,7 @@ namespace hedCommon.exemple
     public class SwitchScenes : MonoBehaviour
     {
         [SerializeField]
-        private GlobalScenesListerAsset _globalScenesListerAsset;
+        private GlobalScenesListerAsset _globalScenesListerAsset = default;
 
         /// <summary>
         /// open a group of scene
