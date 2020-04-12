@@ -1,7 +1,7 @@
 ﻿using hedCommon.extension.runtime;
 using System.Collections.Generic;
 #if UNITY_EDITOR
-using UnityEditor;
+    using UnityEditor;
 #endif
 using UnityEngine;
 
@@ -318,7 +318,7 @@ namespace hedCommon.time
             _currentDeltaTime = _currentUnscaledDeltaTime * timeScale;
 
             ClampDeltaTime();
-
+            
             SetSmoothDeltaTimes();
         }
 
