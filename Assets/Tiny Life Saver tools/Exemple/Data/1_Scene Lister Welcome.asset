@@ -18,5 +18,7 @@ MonoBehaviour:
   CalculatedPath: 
   NameList: Scene List
   SceneToLoad:
+  - sceneAsset: {fileID: 102900000, guid: 9121b9a93d3e72a448e3fc00d400b64c, type: 3}
+    scenePath: Assets/Tiny Life Saver tools/Exemple/LIGHT SCENE.unity
   - sceneAsset: {fileID: 102900000, guid: 7e21177ffda7ddc4081af1529b5fce13, type: 3}
-    scenePath: Assets/WorkFlow Tools/Exemple/1_WELCOME.unity
+    scenePath: Assets/Tiny Life Saver tools/Exemple/1_WELCOME.unity
