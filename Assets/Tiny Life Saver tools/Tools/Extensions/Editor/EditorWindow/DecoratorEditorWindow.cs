@@ -50,7 +50,7 @@ namespace hedCommon.extension.editor.editorWindow
         #endregion
 
 
-        private void OnEnable()
+        protected void OnEnable()
         {
             OnCustomEnable();
         }
@@ -60,7 +60,7 @@ namespace hedCommon.extension.editor.editorWindow
             OnCustomDestroy();
         }
 
-        private void OnDisable()
+        protected void OnDisable()
         {
             OnCustomDisable();
         }
@@ -86,11 +86,30 @@ namespace hedCommon.extension.editor.editorWindow
         {
             this.minSize = minSize;
         }
+        protected virtual void SetMinSize(float width, float height)
+        {
+            this.minSize = new Vector2(width, height);
+        }
 
         protected virtual void SetMaxSize(Vector2 maxSize)
         {
             this.maxSize = maxSize;
         }
+
+        protected virtual void SetMaxSize(float width, float height)
+        {
+            this.maxSize = new Vector2(width, height);
+        }
+        protected virtual void SetMaxWidth(float width)
+        {
+            this.maxSize = new Vector2(width, this.maxSize.y);
+        }
+        protected virtual void SetMaxHeight(float height)
+        {
+            this.maxSize = new Vector2(this.maxSize.x, height);
+        }
+
+
 
         /// <summary>
         /// called every time we need to actualize the editor (at start, and after compilation)

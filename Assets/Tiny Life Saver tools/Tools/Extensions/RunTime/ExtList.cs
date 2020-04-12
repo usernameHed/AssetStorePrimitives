@@ -104,6 +104,32 @@ namespace hedCommon.extension.runtime
         }
 
         /// <summary>
+        /// remove all occurence of an item in a list
+        /// </summary>
+        /// <typeparam name="T">type of items</typeparam>
+        /// <param name="list">list where to remove items</param>
+        /// <param name="item">item to remove multiple times</param>
+        /// <param name="removeAllOccurence">true: remove multiple, else, remove once</param>
+        /// <returns>true if removed something</returns>
+        public static bool Remove<T>(this List<T> list, T item, bool removeAllOccurence)
+        {
+            if (!removeAllOccurence)
+            {
+                return (list.Remove(item));
+            }
+            bool removed = false;
+            for (int i = list.Count - 1; i >= 0; i--)
+            {
+                if (list[i].Equals(item))
+                {
+                    list.RemoveAt(i);
+                    removed = true;
+                }
+            }
+            return (removed);
+        }
+
+        /// <summary>
         /// Remove occurence of OtherListReference inside the ListToClean
         /// 
         /// from a listToClean:
