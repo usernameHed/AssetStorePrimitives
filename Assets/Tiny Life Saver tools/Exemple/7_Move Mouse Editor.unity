@@ -285,8 +285,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: You can create more primitve ! Torus, Cone, Half capsule... you can even
-    procedurally generate them with the given code
+  m_Text: Clic on Tools/Mouse Editor/Sample to see how to save / load mouse position
 --- !u!222 &544037296
 CanvasRenderer:
   m_ObjectHideFlags: 0
