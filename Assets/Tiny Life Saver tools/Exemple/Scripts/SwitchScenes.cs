@@ -19,6 +19,10 @@ namespace hedCommon.exemple
             _globalScenesListerAsset.LoadScenesByIndex(index, OnComplete, hardReload: false);
         }
 
+        /// <summary>
+        /// called when all scenes are loaded
+        /// </summary>
+        /// <param name="sceneAssetLister"></param>
         public void OnComplete(SceneAssetLister sceneAssetLister)
         {
             Debug.Log("Group " + sceneAssetLister.NameList + " has loaded !");
