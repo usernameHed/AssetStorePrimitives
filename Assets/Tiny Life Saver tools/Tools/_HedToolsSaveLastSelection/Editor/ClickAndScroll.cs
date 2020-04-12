@@ -96,7 +96,7 @@ namespace hedCommon.saveLastSelection
             _currentIndex = 0;
         }
 
-       
+        
 
         private static void AttemptToScroll()
         {
@@ -174,7 +174,5 @@ namespace hedCommon.saveLastSelection
             }
             return (currentValue);
         }
-
-        //end of class
     }
 }

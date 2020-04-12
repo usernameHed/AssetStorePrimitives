@@ -237,7 +237,7 @@ namespace hedCommon.saveLastSelection
                 GUI.color = (_saveLastSelectionsEditorWindow.LastSelectedObject == _saveLastSelectionsEditorWindow.SelectedObjectsWithoutDoublon[i]) ? Color.green : Color.white;
                 using (HorizontalScope horizontalScope = new HorizontalScope())
                 {
-                    if (GUILayout.Button("p", GUILayout.Width(17), GUILayout.Height(17)))
+                    if (ExtGUIButtons.ButtonImage("ping", GUILayout.Width(17), GUILayout.Height(17)))
                     {
                         ForceSelection(_saveLastSelectionsEditorWindow.SelectedObjectsWithoutDoublon[i], false);
                     }
