@@ -19,6 +19,10 @@ MonoBehaviour:
   NameList: Scene List
   SceneToLoad:
   - sceneAsset: {fileID: 102900000, guid: 9121b9a93d3e72a448e3fc00d400b64c, type: 3}
-    scenePath: Assets/WorkFlow Tools/Exemple/LIGHT SCENE.unity
+    scenePath: Assets/Tiny Life Saver tools/Exemple/LIGHT SCENE.unity
   - sceneAsset: {fileID: 102900000, guid: 84ca95e4a405afb4994b3deb3622e914, type: 3}
-    scenePath: Assets/WorkFlow Tools/Exemple/2_Load Groups of scenes.unity
+    scenePath: Assets/Tiny Life Saver tools/Exemple/2.1_Load Groups of scenes.unity
+  - sceneAsset: {fileID: 102900000, guid: e0a5f56fab4b00244aed48baee34b000, type: 3}
+    scenePath: Assets/Tiny Life Saver tools/Exemple/2.2_Load From Code.unity
+  - sceneAsset: {fileID: 102900000, guid: 497bdd7a96b5afc4ba1c145048a920be, type: 3}
+    scenePath: Assets/Tiny Life Saver tools/Exemple/2.3_Link GameObjects.unity

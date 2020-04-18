@@ -6,7 +6,7 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
-    path: Assets/Tiny Life Saver tools/Exemple/2_Load Groups of scenes.unity
+    path: Assets/Tiny Life Saver tools/Exemple/2.1_Load Groups of scenes.unity
     guid: 84ca95e4a405afb4994b3deb3622e914
   - enabled: 1
     path: Assets/Tiny Life Saver tools/Exemple/LIGHT SCENE.unity
@@ -26,4 +26,16 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Tiny Life Saver tools/Exemple/7_Move Mouse Editor.unity
     guid: 20930476a9bd77549b3fad322d90442b
+  - enabled: 1
+    path: Assets/Tiny Life Saver tools/Exemple/2.2_Load From Code.unity
+    guid: e0a5f56fab4b00244aed48baee34b000
+  - enabled: 1
+    path: Assets/Tiny Life Saver tools/Exemple/2.3_Link GameObjects.unity
+    guid: 497bdd7a96b5afc4ba1c145048a920be
+  - enabled: 1
+    path: Assets/Tiny Life Saver tools/Exemple/8_Take ScreenShot.unity
+    guid: 4bcd2763332148d4f8962192ed7b13a1
+  - enabled: 1
+    path: Assets/Tiny Life Saver tools/Exemple/9_Time Scale.unity
+    guid: 3a4fe9338f3e0b24b970984eafbc1cf4
   m_configObjects: {}

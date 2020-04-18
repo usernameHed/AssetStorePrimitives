@@ -40,6 +40,11 @@ namespace hedCommon.extension.editor.editorWindow
             return (editorWindow);
         }
 
+        public static EditorWindow FocusedWindow()
+        {
+            return (EditorWindow.focusedWindow);
+        }
+
         public static void CloseEditorWindow<T>() where T : EditorWindow
         {
             T raceTrackNavigator = EditorWindow.GetWindow<T>();

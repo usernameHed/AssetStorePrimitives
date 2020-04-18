@@ -1,15 +1,32 @@
-﻿using System.Collections;
+﻿using hedCommon.extension.editor.screenCapture;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-
 namespace hedCommon.extension.editor
 {
-    public static class ExtEventEditor
+    public static class ExtMouse
     {
         private static bool _wasMouseDown;
         private static Vector2 _clickDownPosition;
 
+        /// <summary>
+        /// Get pixel color under mouse position
+        /// Usage: Color color = ExtMouse.GetColorUnderMousePosition();
+        /// </summary>
+        /// <returns>Pixel color under mouse position</returns>
+        public static Color GetColorUnderMousePosition()
+        {
+            Vector2 realMousePosition = ExtMouse.GetRealMousePosition();
+            return (ExtScreenCapture.PickColorAtPosition(realMousePosition));
+        }
+
+        public static Vector2 GetRealMousePosition()
+        {
+            return (GUIUtility.GUIToScreenPoint(Event.current.mousePosition));
+        }
+
+        #region mouse event editor
         public enum Modifier
         {
             NONE = 0,
@@ -24,14 +41,6 @@ namespace hedCommon.extension.editor
             LEFT = 10,
             RIGHT = 20,
             MIDDLE = 30,
-        }
-
-        public static void Use()
-        {
-            if (Event.current.type != EventType.Layout && Event.current.type != EventType.Repaint)
-            {
-                Event.current.Use();
-            }
         }
 
         private static List<Modifier> SetupModifiers(Event current)
@@ -159,31 +168,6 @@ namespace hedCommon.extension.editor
             return (clicked && eventType == EventType.MouseDown && buttonType == ButtonType.MIDDLE);
         }
 
-        public static bool IsKeyUp(Event current, KeyCode keyCode)
-        {
-            if (current == null)
-            {
-                return (false);
-            }
-
-            int controlId = GUIUtility.GetControlID(FocusType.Passive);
-            EventType eventType = current.GetTypeForControl(controlId);
-            bool pressed = current.keyCode == keyCode && eventType == EventType.KeyUp;
-            return (pressed);
-        }
-
-        public static bool IsKeyDown(KeyCode keyCode)
-        {
-            if (Event.current == null)
-            {
-                return (false);
-            }
-            int controlId = GUIUtility.GetControlID(FocusType.Passive);
-            EventType eventType = Event.current.GetTypeForControl(controlId);
-            bool pressed = Event.current.keyCode == keyCode && eventType == EventType.KeyDown;
-            return (Event.current.keyCode == keyCode);
-        }
-
         /// <summary>
         /// return true if the left mouse button is Down
         /// </summary>
@@ -222,7 +206,7 @@ namespace hedCommon.extension.editor
         /// <returns></returns>
         public static bool IsClickOnSceneView(Event current)
         {
-            if (ExtEventEditor.IsLeftMouseDown(current))
+            if (ExtMouse.IsLeftMouseDown(current))
             {
                 _clickDownPosition = current.mousePosition;
                 _wasMouseDown = true;
@@ -239,5 +223,7 @@ namespace hedCommon.extension.editor
             }
             return (false);
         }
+
+        #endregion
     }
 }

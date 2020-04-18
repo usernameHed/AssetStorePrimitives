@@ -131,8 +131,9 @@ GameObject:
   - component: {fileID: 160223818}
   - component: {fileID: 160223817}
   - component: {fileID: 160223816}
+  - component: {fileID: 160223819}
   m_Layer: 0
-  m_Name: Directional Light (1)
+  m_Name: LIGHT 2
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -227,6 +228,20 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 46.9, y: -116.5, z: 0}
+--- !u!114 &160223819
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 160223815}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 98bbc2c1e63e98543830eec78d976795, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  GuidDescriptionType: 2
+  serializedGuid: 678a07d6ee3fd1459a76f00f145b2bfe
 --- !u!1 &1360894306
 GameObject:
   m_ObjectHideFlags: 0
@@ -337,8 +352,9 @@ GameObject:
   - component: {fileID: 1613464473}
   - component: {fileID: 1613464472}
   - component: {fileID: 1613464474}
+  - component: {fileID: 1613464475}
   m_Layer: 0
-  m_Name: Directional Light
+  m_Name: LIGHT 1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -433,3 +449,17 @@ MonoBehaviour:
   ShowName: 0
   ColorText: {r: 1, g: 1, b: 1, a: 1}
   HideHandle: 0
+--- !u!114 &1613464475
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1613464471}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 98bbc2c1e63e98543830eec78d976795, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  GuidDescriptionType: 1
+  serializedGuid: 0d11ca399b02864584a52cf442eb2ef9
