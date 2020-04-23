@@ -15,6 +15,8 @@ namespace hedCommon.saveLastSelection
     public class SaveLastSelections
     {
         private SaveLastSelectionsEditorWindow _saveLastSelectionsEditorWindow;
+        public SaveLastSelectionsEditorWindow GetSaveWindow() { return (_saveLastSelectionsEditorWindow); }
+
         private bool _isInit = false;
         private bool _isClosed = false;
         private FrequencyCoolDown _frequencyCoolDown = new FrequencyCoolDown();
