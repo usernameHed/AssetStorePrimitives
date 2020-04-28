@@ -4,8 +4,13 @@ using System.IO;
 using hedCommon.extension.editor;
 using System.Collections.Generic;
 using hedCommon.extension.runtime;
+using extUnityComponents.transform;
+using extUnityComponents;
+using System;
+using System.Reflection;
+using hedCommon.time;
 
-namespace hedCommon.extension.editor
+namespace hedCommon.tools
 {
     /// <summary>
     /// An editor utility for easily creating symlinks in your project.
@@ -15,36 +20,241 @@ namespace hedCommon.extension.editor
     /// symlinks.
     /// </summary>
     [InitializeOnLoad]
-	public static class ExtSymLink
-	{
-		// FileAttributes that match a junction folder.
-		const FileAttributes FOLDER_SYMLINK_ATTRIBS = FileAttributes.Directory | FileAttributes.ReparsePoint;
+    public static class ExtSymLink
+    {
+        // FileAttributes that match a junction folder.
+        const FileAttributes FOLDER_SYMLINK_ATTRIBS = FileAttributes.Directory | FileAttributes.ReparsePoint;
         const FileAttributes FILE_SYMLINK_ATTRIBS = FileAttributes.Directory & FileAttributes.Archive;
 
         private static List<string> _allSymLinksInProject = new List<string>();
+        private static List<int> _allGameObjectInFrameWork = new List<int>(500);
+        private static List<System.Type> _allNonPersistentTypeComponents = new List<System.Type>()
+        {
+            typeof(Transform),
+            typeof(GameObject),
+            typeof(TransformHiddedTools),
+            typeof(AnimatorHiddedTools),
+            typeof(MeshFilterHiddedTools),
+            typeof(RectTransformHiddedTools),
+            typeof(RectTransformHiddedTools),
+            typeof(RigidBodyAdditionalMonobehaviourSettings),
+        };
 
-        // Style used to draw the symlink indicator in the project view.
+        private static List<string> _allForbiddenPropertyName = new List<string>()
+        {
+            "material",
+            "materials",
+            "mesh"
+        };
+
+        private static List<System.Type> _allForbiddenPropertyType = new List<Type>()
+        {
+            typeof(Transform),
+            typeof(GameObject)
+        };
+
+        private static bool _needToSetupListOfGameObject = true;
+        private const BindingFlags _flags = BindingFlags.Public | BindingFlags.Instance | BindingFlags.NonPublic;
+        private static EditorChronoWithNoTimeEditor _editorChronoWithNoTimeEditor = new EditorChronoWithNoTimeEditor();
+        private const float LIMIT_BETWEEN_TWO_LOADING = 1f;
         private static GUIStyle _symlinkMarkerStyle = null;
-		private static GUIStyle symlinkMarkerStyle
-		{
-			get
-			{
-				if(_symlinkMarkerStyle == null)
-				{
-					_symlinkMarkerStyle = new GUIStyle(EditorStyles.label);
+
+        #region Display marker
+
+        private static GUIStyle symlinkMarkerStyle
+        {
+            get
+            {
+                if (_symlinkMarkerStyle == null)
+                {
+                    _symlinkMarkerStyle = new GUIStyle(EditorStyles.label);
                     _symlinkMarkerStyle.normal.textColor = Color.blue;
-					_symlinkMarkerStyle.alignment = TextAnchor.MiddleRight;
-				}
-				return _symlinkMarkerStyle;
-			}
-		}
+                    _symlinkMarkerStyle.alignment = TextAnchor.MiddleRight;
+                }
+                return _symlinkMarkerStyle;
+            }
+        }
 
         /// <summary>
         /// Static constructor subscribes to projectWindowItemOnGUI delegate.
         /// </summary>
         static ExtSymLink()
-		{
+        {
             EditorApplication.projectWindowItemOnGUI += OnProjectWindowItemGUI;
+            EditorApplication.hierarchyWindowItemOnGUI += OnHierarchyItemGUI;
+            EditorApplication.hierarchyChanged += OnHierarchyWindowChanged;
+            _needToSetupListOfGameObject = true;
+        }
+
+        [UnityEditor.Callbacks.DidReloadScripts]
+        private static void OnScriptsReloaded()
+        {
+            _needToSetupListOfGameObject = true;
+        }
+
+        private static void OnHierarchyWindowChanged()
+        {
+            _needToSetupListOfGameObject = true;
+        }
+
+        private static void UpdateListGameObjects()
+        {
+            _needToSetupListOfGameObject = false;
+            _editorChronoWithNoTimeEditor.StartChrono(LIMIT_BETWEEN_TWO_LOADING);
+
+            // Check here
+            GameObject[] allGameObjects = UnityEngine.Object.FindObjectsOfType(typeof(GameObject)) as GameObject[];
+
+            _allGameObjectInFrameWork.Clear();
+            foreach (GameObject g in allGameObjects)
+            {
+                bool isSomethingInsideFrameWork = IsPrefabsAndInSymLink(g) || HasComponentInSymLink(g) || HasSymLinkAssetInsideComponent(g);
+                if (isSomethingInsideFrameWork)
+                {
+                    _allGameObjectInFrameWork.AddIfNotContain(g.GetInstanceID());
+                }
+            }
+        }
+
+        private static bool IsPrefabsAndInSymLink(GameObject g)
+        {
+            bool isPrefab = ExtPrefabsEditor.IsPrefab(g, out GameObject prefab);
+            if (!isPrefab)
+            {
+                return (false);
+            }
+            UnityEngine.Object parentObject = PrefabUtility.GetCorrespondingObjectFromSource(prefab);
+            string path = AssetDatabase.GetAssetPath(parentObject);
+            UpdateSymLinksParent(path);
+            FileAttributes attribs = File.GetAttributes(path);
+            return (IsAttributeAFileInsideASymLink(path, attribs));
+        }
+
+        /// <summary>
+        /// return true if this gameObject has at least one component inside a symLink
+        /// </summary>
+        /// <param name="gameObject"></param>
+        /// <returns></returns>
+        private static bool HasComponentInSymLink(GameObject g)
+        {
+            MonoBehaviour[] monoBehaviours = g.GetComponents<MonoBehaviour>();
+            for (int i = 0; i < monoBehaviours.Length; i++)
+            {
+                MonoBehaviour mono = monoBehaviours[i];
+                if (mono != null && mono.hideFlags == HideFlags.None && !_allNonPersistentTypeComponents.Contains(mono.GetType()))
+                {
+                    MonoScript script = MonoScript.FromMonoBehaviour(mono); // gets script as an asset
+                    string path = script.GetPath();
+                    UpdateSymLinksParent(path);
+                    FileAttributes attribs = File.GetAttributes(path);
+                    if (IsAttributeAFileInsideASymLink(path, attribs))
+                    {
+                        return (true);
+                    }
+                }
+            }
+            return (false);
+        }
+
+        private static bool HasSymLinkAssetInsideComponent(GameObject g)
+        {
+            Component[] components = g.GetComponents<Component>();
+            if (components == null || components.Length == 0)
+            {
+                return (false);
+            }
+
+            for (int i = 0; i < components.Length; i++)
+            {
+                Component component = components[i];
+
+                Type componentType = component.GetType();
+
+                if (_allNonPersistentTypeComponents.Contains(componentType))
+                {
+                    continue;
+                }
+                try
+                {
+                    PropertyInfo[] properties = componentType.GetProperties(_flags);
+                    foreach (PropertyInfo property in properties)
+                    {
+
+                        if (_allForbiddenPropertyName.Contains(property.Name))
+                        {
+                            continue;
+                        }
+                        if (_allForbiddenPropertyType.Contains(property.PropertyType))
+                        {
+                            continue;
+                        }
+                        if (property.IsDefined(typeof(ObsoleteAttribute), true))
+                        {
+                            continue;
+                        }
+                        UnityEngine.Object propertyValue = property.GetValue(component, null) as UnityEngine.Object;
+
+                        if (propertyValue is UnityEngine.Object && !propertyValue.IsTruelyNull())
+                        {
+                            string path = propertyValue.GetPath();
+                            UpdateSymLinksParent(path);
+                            FileAttributes attribs = File.GetAttributes(path);
+                            if (IsAttributeAFileInsideASymLink(path, attribs))
+                            {
+                                return (true);
+                            }
+                        }
+                    }
+
+                    FieldInfo[] fields = componentType.GetFields(_flags);
+                    foreach (FieldInfo field in fields)
+                    {
+                        if (field.IsDefined(typeof(ObsoleteAttribute), true))
+                        {
+                            continue;
+                        }
+                        UnityEngine.Object fieldValue = field.GetValue(component) as UnityEngine.Object;
+
+                        if (fieldValue is UnityEngine.Object && !fieldValue.IsTruelyNull())
+                        {
+                            string path = fieldValue.GetPath();
+                            UpdateSymLinksParent(path);
+                            FileAttributes attribs = File.GetAttributes(path);
+                            if (IsAttributeAFileInsideASymLink(path, attribs))
+                            {
+                                return (true);
+                            }
+                        }
+                    }
+
+                }
+                catch { }
+            }
+
+            return (false);
+        }
+
+        private static void OnHierarchyItemGUI(int instanceID, Rect selectionRect)
+        {
+            try
+            {
+                if (_needToSetupListOfGameObject && _editorChronoWithNoTimeEditor.IsNotRunning())
+                {
+                    UpdateListGameObjects();
+                }
+
+                // place the icoon to the right of the list:
+                Rect r = new Rect(selectionRect);
+                r.x = r.width - 20;
+                r.width = 18;
+
+                if (_allGameObjectInFrameWork.Contains(instanceID))
+                {
+                    // Draw the texture if it's a light (e.g.)
+                    GUI.Label(r, "*", symlinkMarkerStyle);
+                }
+            }
+            catch { }
         }
 
         /// <summary>
@@ -53,12 +263,12 @@ namespace hedCommon.extension.editor
         /// <param name="guid"></param>
         /// <param name="r"></param>
         private static void OnProjectWindowItemGUI(string guid, Rect r)
-		{
-			try
-			{
-				string path = AssetDatabase.GUIDToAssetPath(guid);
+        {
+            try
+            {
+                string path = AssetDatabase.GUIDToAssetPath(guid);
 
-				if(!string.IsNullOrEmpty(path))
+                if (!string.IsNullOrEmpty(path))
                 {
                     FileAttributes attribs = File.GetAttributes(path);
                     UpdateSymLinksParent(path);
@@ -73,8 +283,8 @@ namespace hedCommon.extension.editor
                     }
                 }
             }
-			catch {}
-		}
+            catch { }
+        }
 
         private static bool IsAttributeAFileInsideASymLink(string path, FileAttributes attribs)
         {
@@ -99,13 +309,15 @@ namespace hedCommon.extension.editor
                 path = ExtPaths.GetDirectoryFromCompletPath(path);
             }
         }
+        #endregion
 
+        #region Create/Remove Symlink
         /// <summary>
         /// add a folder link at the current selection in the project view
         /// </summary>
         [MenuItem("Assets/SymLink/Add Folder Link", false, 20)]
-		static void DoTheSymlink()
-		{
+        static void DoTheSymlink()
+        {
             string targetPath = GetSelectedPathOrFallback();
 
             FileAttributes attribs = File.GetAttributes(targetPath);
@@ -126,18 +338,18 @@ namespace hedCommon.extension.editor
 
             targetPath = targetPath + "/" + sourceFolderName;
 
-			if (Directory.Exists(targetPath))	
-			{
-				UnityEngine.Debug.LogWarning(string.Format("A folder already exists at this location, aborting link.\n{0} -> {1}", sourceFolderPath, targetPath));
-				return;
-			}
+            if (Directory.Exists(targetPath))
+            {
+                UnityEngine.Debug.LogWarning(string.Format("A folder already exists at this location, aborting link.\n{0} -> {1}", sourceFolderPath, targetPath));
+                return;
+            }
 
 
             string commandeLine = "/C mklink /J \"" + targetPath + "\" \"" + sourceFolderPath + "\"";
             ExtExecute.Execute(commandeLine);
-			
-			AssetDatabase.Refresh(ImportAssetOptions.ForceUpdate);
-		}
+
+            AssetDatabase.Refresh(ImportAssetOptions.ForceUpdate);
+        }
 
         /// <summary>
         /// open the folder panel, wait on output the folder path & folder name
@@ -255,7 +467,7 @@ namespace hedCommon.extension.editor
                 throw new System.Exception("directory " + directoryName + " is not a symLinkFolder");
             }
 
-            int choice = EditorUtility.DisplayDialogComplex("Remove SymLink", "Do you want to Remove the link only ? If you choose to remove also the directory, it will keep the real files on your computer.", "Remove Link Only", "Cancel", "Remove Link and Directory from unity");
+            int choice = EditorUtility.DisplayDialogComplex("Remove SymLink", "Do you want to Remove the link only ?", "Remove Link Only", "Cancel", "Remove Link and Directory /!\\");
             if (choice == 1)
             {
                 return;
@@ -289,10 +501,14 @@ namespace hedCommon.extension.editor
             AssetDatabase.Refresh(ImportAssetOptions.ForceUpdate);
         }
 
+        #endregion
+
+        #region UseFull Function
+
         public static bool IsFolderHasParentSymLink(string pathFolder, out string pathSymLinkFound)
         {
             pathSymLinkFound = "";
-            
+
             while (!string.IsNullOrEmpty(pathFolder))
             {
                 string directoryName = Path.GetDirectoryName(pathFolder);
@@ -376,5 +592,6 @@ namespace hedCommon.extension.editor
             formattedPath = formattedPath.Replace('|', '-');
             return (formattedPath);
         }
+        #endregion
     }
 }
