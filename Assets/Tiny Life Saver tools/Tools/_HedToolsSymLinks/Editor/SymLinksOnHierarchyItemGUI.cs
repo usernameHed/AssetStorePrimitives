@@ -32,6 +32,7 @@ namespace hedCommon.symlinks
         private static List<bool> _gameObjectsHasBeenSetup = new List<bool>(300);
         private static List<bool> _gameObjectsIsInFrameWork = new List<bool>(300);
         private static List<string> _toolTipInfo = new List<string>(300);
+        private static List<string> _pathSymLinksObjects = new List<string>(300);
         private static bool _needToSetup = false;
         private static int _settupedGameObject = 0;
         private static EditorChronoWithNoTimeEditor _timerBetween2ChunkSetup = new EditorChronoWithNoTimeEditor();
@@ -59,6 +60,7 @@ namespace hedCommon.symlinks
             _toolTipInfo.Clear();
             _gameObjectsHasBeenSetup.Clear();
             _gameObjectsIsInFrameWork.Clear();
+            _pathSymLinksObjects.Clear();
             _settupedGameObject = 0;
         }
 
@@ -101,6 +103,7 @@ namespace hedCommon.symlinks
                     _toolTipInfo.Add(SYMLINK_TOOLTIP);
                     _gameObjectsHasBeenSetup.Add(false);
                     _gameObjectsIsInFrameWork.Add(false);
+                    _pathSymLinksObjects.Add("");
                     index = _gameObjectsId.Count - 1;
                     SetupGameObject(index);
                 }
@@ -112,7 +115,7 @@ namespace hedCommon.symlinks
 
                 if (_gameObjectsIsInFrameWork[index])
                 {
-                    DisplayMarker(selectionRect, _toolTipInfo[index]);
+                    DisplayMarker(selectionRect, _toolTipInfo[index], SymLinksColorChoice.ChooseColorFromPath(_pathSymLinksObjects[index]));
                 }
             }
             catch (Exception e) { Debug.Log(e); }
@@ -149,11 +152,13 @@ namespace hedCommon.symlinks
             }
 
             string toolTip = _toolTipInfo[index];
-            bool prefab = DetermineIfGameObjectIsInSymLink.IsPrefabsAndInSymLink(_gameObjectsList[index] as GameObject, ref SymLinksOnProjectWindowItemGUI.AllSymLinksAssetPathSaved, ref toolTip);
-            bool component = DetermineIfGameObjectIsInSymLink.HasComponentInSymLink(_gameObjectsList[index] as GameObject, ref SymLinksOnProjectWindowItemGUI.AllSymLinksAssetPathSaved, ref toolTip);
-            bool assets = DetermineIfGameObjectIsInSymLink.HasSymLinkAssetInsideComponent(_gameObjectsList[index] as GameObject, ref SymLinksOnProjectWindowItemGUI.AllSymLinksAssetPathSaved, ref toolTip);
+            string path = "";
+            bool prefab = DetermineIfGameObjectIsInSymLink.IsPrefabsAndInSymLink(_gameObjectsList[index] as GameObject, ref SymLinksOnProjectWindowItemGUI.AllSymLinksAssetPathSaved, ref toolTip, ref path);
+            bool component = DetermineIfGameObjectIsInSymLink.HasComponentInSymLink(_gameObjectsList[index] as GameObject, ref SymLinksOnProjectWindowItemGUI.AllSymLinksAssetPathSaved, ref toolTip, ref path);
+            bool assets = DetermineIfGameObjectIsInSymLink.HasSymLinkAssetInsideComponent(_gameObjectsList[index] as GameObject, ref SymLinksOnProjectWindowItemGUI.AllSymLinksAssetPathSaved, ref toolTip, ref path);
             bool isSomethingInsideFrameWork = prefab || component || assets;
 
+            _pathSymLinksObjects[index] = path;
             _toolTipInfo[index] = toolTip;
             _gameObjectsHasBeenSetup[index] = true;
             _gameObjectsIsInFrameWork[index] = isSomethingInsideFrameWork;
@@ -164,12 +169,12 @@ namespace hedCommon.symlinks
         /// display the marker at the given position
         /// </summary>
         /// <param name="selectionRect"></param>
-        private static void DisplayMarker(Rect selectionRect, string toolTip)
+        private static void DisplayMarker(Rect selectionRect, string toolTip, Color color)
         {
             Rect r = new Rect(selectionRect);
             r.x = r.width - 20;
             r.width = 18;
-            ExtSymLinks.DisplayTinyMarker(selectionRect, toolTip);
+            ExtSymLinks.DisplayTinyMarker(selectionRect, toolTip, color);
         }
     }
 }
